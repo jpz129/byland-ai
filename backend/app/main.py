@@ -6,14 +6,15 @@ from dotenv import load_dotenv  # type: ignore
 import os
 load_dotenv()
 
-from app.tools.mcp_tools import register_mcp_tools
+from app.tools.mcp_tools import register_mcp_tools, mcp
 from app.pipelines.trip_planner_graph import run_trip_planner
 
 # Initialize FastAPI app
 app = FastAPI(title="Trail Angel Planner")
 
-# Register MCP tools
+# Register MCP tools and mount the MCP HTTP app
 register_mcp_tools()
+app.mount("/mcp", mcp.streamable_http_app())
 
 # Pydantic model for trip request
 template = BaseModel
