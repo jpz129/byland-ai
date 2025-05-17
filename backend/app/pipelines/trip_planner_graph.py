@@ -1,10 +1,8 @@
 from langgraph import Graph
 from langchain.chat_models import ChatOpenAI  # type: ignore
+from mcp.client.streamable_http import streamablehttp_client  # type: ignore
+from mcp import ClientSession  # type: ignore
 
-from app.agents.route_planner import RoutePlannerAgent
-from app.agents.gear_agent import GearAgent
-from app.agents.weather_agent import WeatherAgent
-from app.agents.permits_agent import PermitsAgent
 from app.memory import get_memory
 
 
@@ -18,27 +16,43 @@ def build_trip_planner_graph(memory) -> Graph:
 
     @graph.node(name="route")
     async def route_node(origin: str, destination: str, days: int):
-        agent = RoutePlannerAgent(memory)
-        result = await agent.plan(origin, destination, days)
-        return result
+        # Call MCP tool for route planning
+        async with streamablehttp_client("http://localhost:8000/mcp") as (r, w, _):
+            async with ClientSession(r, w) as session:
+                await session.initialize()
+                return await session.call_tool(
+                    "plan_route", {"origin": origin, "destination": destination, "days": days}
+                )
 
     @graph.node(name="gear")
     async def gear_node(origin: str, destination: str, days: int):
-        agent = GearAgent(memory)
-        result = await agent.suggest(origin, destination, days)
-        return result
+        # Call MCP tool for gear suggestions
+        async with streamablehttp_client("http://localhost:8000/mcp") as (r, w, _):
+            async with ClientSession(r, w) as session:
+                await session.initialize()
+                return await session.call_tool(
+                    "suggest_gear", {"origin": origin, "destination": destination, "days": days}
+                )
 
     @graph.node(name="weather")
     async def weather_node(origin: str, destination: str, days: int):
-        agent = WeatherAgent(memory)
-        result = await agent.forecast(origin, destination, days)
-        return result
+        # Call MCP tool for weather forecast
+        async with streamablehttp_client("http://localhost:8000/mcp") as (r, w, _):
+            async with ClientSession(r, w) as session:
+                await session.initialize()
+                return await session.call_tool(
+                    "forecast_weather", {"origin": origin, "destination": destination, "days": days}
+                )
 
     @graph.node(name="permits")
     async def permits_node(origin: str, destination: str, days: int):
-        agent = PermitsAgent(memory)
-        result = await agent.check(origin, destination, days)
-        return result
+        # Call MCP tool for permit checking
+        async with streamablehttp_client("http://localhost:8000/mcp") as (r, w, _):
+            async with ClientSession(r, w) as session:
+                await session.initialize()
+                return await session.call_tool(
+                    "check_permits", {"origin": origin, "destination": destination, "days": days}
+                )
 
     return graph
 
