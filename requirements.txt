@@ -2,9 +2,8 @@ fastapi
 uvicorn[standard]
 langchain
 langgraph
-mcp  # MCP library
+mcp[cli]  # MCP library with client/server
 python-dotenv
 httpx
 openai
 langchain-openai
-click

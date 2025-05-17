@@ -1,7 +1,7 @@
 """
 Register MCP (Model Context Protocol) tools for agents to use.
 """
-from mcp import FastMCP  # type: ignore
+from mcp.server.fastmcp import FastMCP  # type: ignore
 
 # Initialize a FastMCP server instance for Trail Angel
 mcp = FastMCP(name="trail_angel")  # type: ignore

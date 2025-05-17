@@ -16,8 +16,9 @@
    ```
 
 ### Run the FastAPI server
+Ensure the `app` package is on the PYTHON path by setting the app directory to `backend`:
 ```bash
-uv run uvicorn backend.app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --port 8000 --app-dir backend
 ```
 
 ### API Endpoints

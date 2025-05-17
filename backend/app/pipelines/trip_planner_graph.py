@@ -1,6 +1,7 @@
-from langgraph import Graph
-from langchain.chat_models import ChatOpenAI  # type: ignore
+from langgraph.graph.graph import Graph
+from langchain_community.chat_models import ChatOpenAI  # type: ignore
 from mcp.client.streamable_http import streamablehttp_client  # type: ignore
+from mcp.client.streamable_http import streamablehttp_client  # type: ignore  # ensure module visibility after extras install
 from mcp import ClientSession  # type: ignore
 
 from app.memory import get_memory
