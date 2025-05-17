@@ -28,9 +28,13 @@ async def plan_trip(request: TripRequest):
     """
     Main endpoint to plan a backpacking trip
     """
+    # Log incoming request
+    print(f"[plan_trip] Received: origin={request.origin}, destination={request.destination}, days={request.days}")
     try:
         # Execute the trip planner graph workflow
         result = await run_trip_planner(request.origin, request.destination, request.days)
+        # Log result before returning
+        print(f"[plan_trip] Result: {result}")
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

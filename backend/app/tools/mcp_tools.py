@@ -13,23 +13,23 @@ def register_mcp_tools():
     # Register placeholder MCP tools
     @mcp.tool(name="plan_route")
     async def plan_route(origin: str, destination: str, days: int) -> dict:
-        """Placeholder for route planning tool"""
+        """Test stub for route planning tool"""
         return {"route": [origin, "...waypoint...", destination], "days": days}
 
     @mcp.tool(name="suggest_gear")
     async def suggest_gear(origin: str, destination: str, days: int) -> dict:
-        """Placeholder for gear suggestion tool"""
-        return {"gear_list": ["Tent", "Sleeping Bag", "...more gear..."]}
+        """Test stub for gear suggestion tool"""
+        return {"gear_list": ["Tent", "Sleeping Bag", "Stove"]}
 
     @mcp.tool(name="forecast_weather")
     async def forecast_weather(origin: str, destination: str, days: int) -> dict:
-        """Placeholder for weather forecast tool"""
-        return {"forecast": [{"day": i+1, "weather": "<Condition>"} for i in range(days)]}
+        """Test stub for weather forecast tool"""
+        return {"forecast": [{"day": i+1, "weather": "Sunny"} for i in range(days)]}
 
     @mcp.tool(name="check_permits")
     async def check_permits(origin: str, destination: str, days: int) -> dict:
-        """Placeholder for permit checking tool"""
-        return {"permits": {"required": False, "details": "<details>"}}
+        """Test stub for permit checking tool"""
+        return {"permits": {"required": False, "details": "None needed"}}
 
     # Additional real tools can be registered here using @mcp.tool
     pass
