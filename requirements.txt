@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+langchain
+langgraph
+mcp  # MCP library
+python-dotenv
+httpx
+openai
+langchain-openai
+click
