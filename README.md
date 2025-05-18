@@ -1,4 +1,6 @@
-# trail-angel
+# ByLand.ai
+
+> How do you let yourself be moved?
 
 ## Backend Setup
 

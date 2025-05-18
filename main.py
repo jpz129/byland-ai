@@ -1,5 +1,5 @@
 def main():
-    print("Hello from trail-angel!")
+    print("Hello from ByLand.ai!")
 
 
 if __name__ == "__main__":
