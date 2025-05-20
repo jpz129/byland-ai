@@ -1,20 +1,34 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Any
 from uuid import uuid4
 
+from sqlalchemy.orm import Session
+
 from app.hiker_profiles.schemas import UserProfile, ProfileUpdate
+from app.hiker_profiles.db import SessionLocal
+from app.hiker_profiles import models
 
 router = APIRouter(prefix="/hiker_profiles", tags=["hiker_profiles"])
 
 # In-memory store for demo purposes
 _profiles_store: dict[str, UserProfile] = {}
 
+# Add dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @router.post("/start", response_model=UserProfile)
-async def start_profile_chat(user_id: str) -> Any:
+async def start_profile_chat(user_id: str, db: Session = Depends(get_db)) -> Any:
     """
     Initialize a new hiker profile and start conversational onboarding.
     """
-    profile = UserProfile(
+    db_user = models.User(user_id=user_id)
+    db.add(db_user)
+    db_profile = models.UserProfile(
         user_id=user_id,
         hiking_experience="",
         gear_style="",
@@ -25,8 +39,10 @@ async def start_profile_chat(user_id: str) -> Any:
         profile_summary="",
         profile_complete=False,
     )
-    _profiles_store[user_id] = profile
-    return profile
+    db.add(db_profile)
+    db.commit()
+    db.refresh(db_profile)
+    return db_profile
 
 @router.post("/update/{user_id}", response_model=UserProfile)
 async def update_profile(user_id: str, data: ProfileUpdate) -> Any:

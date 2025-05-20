@@ -7,3 +7,5 @@ python-dotenv
 httpx
 openai
 langchain-openai
+sqlalchemy
+psycopg2-binary
