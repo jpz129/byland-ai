@@ -1,1 +1,1 @@
-from app.planner.main import app
+from app.main import app
