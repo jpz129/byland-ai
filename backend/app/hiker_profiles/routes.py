@@ -19,9 +19,6 @@ def get_db():
     finally:
         db.close()
 
-# In-memory session store for demo (replace with Redis or DB for production)
-session_store = {}
-
 # Add this model to store onboarding state persistently
 class OnboardingSession(models.Base):
     __tablename__ = "onboarding_sessions"
@@ -33,30 +30,45 @@ async def start_profile_chat(user_id: str, db: Session = Depends(get_db)) -> Any
     """
     Initialize a new hiker profile and start conversational onboarding.
     """
-    db_user = models.User(user_id=user_id)
-    db.add(db_user)
-    db_profile = models.UserProfile(
-        user_id=user_id,
-        hiking_experience="",
-        gear_style="",
-        preferred_terrain=[],
-        personality_tags=[],
-        dietary_needs=None,
-        medical_notes=None,
-        profile_summary="",
-        profile_complete=False,
-    )
-    db.add(db_profile)
+    import uuid
+    # Ensure user_id is a valid UUID (strip quotes if present)
+    if user_id.startswith('"') or user_id.startswith("'"):
+        user_id = user_id.strip('"').strip("'")
+    user_id_obj = uuid.UUID(user_id)
+    # Check if user already exists
+    db_user = db.query(models.User).filter(models.User.user_id == user_id_obj).first()
+    if not db_user:
+        db_user = models.User(user_id=user_id_obj)
+        db.add(db_user)
+    # Check if profile already exists
+    db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id_obj).first()
+    if not db_profile:
+        db_profile = models.UserProfile(
+            user_id=str(user_id_obj),  # Ensure this is a string for Pydantic
+            hiking_experience="",
+            gear_style="",
+            preferred_terrain=[],
+            personality_tags=[],
+            dietary_needs=None,
+            medical_notes=None,
+            profile_summary="",
+            profile_complete=False,
+        )
+        db.add(db_profile)
     db.commit()
     db.refresh(db_profile)
+    # Convert user_id to string for response
+    db_profile.user_id = str(db_profile.user_id)
     return db_profile
 
 @router.post("/update/{user_id}", response_model=UserProfile)
 async def update_profile(user_id: str, data: ProfileUpdate, db: Session = Depends(get_db)) -> Any:
-    """
-    Update structured fields and summary for an existing profile.
-    """
-    db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id).first()
+    import uuid
+    # Ensure user_id is a valid UUID
+    if user_id.startswith('"') or user_id.startswith("'"):
+        user_id = user_id.strip('"').strip("'")
+    user_id_obj = uuid.UUID(user_id)
+    db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id_obj).first()
     if not db_profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     update_data = data.dict(exclude_none=True)
@@ -64,16 +76,20 @@ async def update_profile(user_id: str, data: ProfileUpdate, db: Session = Depend
         setattr(db_profile, key, value)
     db.commit()
     db.refresh(db_profile)
+    db_profile.user_id = str(db_profile.user_id)
     return db_profile
 
 @router.get("/{user_id}", response_model=UserProfile)
 async def get_profile(user_id: str, db: Session = Depends(get_db)) -> Any:
-    """
-    Fetch the full user profile.
-    """
-    db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id).first()
+    import uuid
+    # Ensure user_id is a valid UUID
+    if user_id.startswith('"') or user_id.startswith("'"):
+        user_id = user_id.strip('"').strip("'")
+    user_id_obj = uuid.UUID(user_id)
+    db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id_obj).first()
     if not db_profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    db_profile.user_id = str(db_profile.user_id)
     return db_profile
 
 @router.post("/edit/{user_id}", response_model=UserProfile)
@@ -89,29 +105,31 @@ async def profile_chat(
     user_input: str = Body(..., embed=True),
     db: Session = Depends(get_db)
 ):
-    """
-    Advance the onboarding state machine for a user, persisting state after each step.
-    """
+    import uuid
+    # Ensure user_id is a valid UUID
+    if user_id.startswith('"') or user_id.startswith("'"):
+        user_id = user_id.strip('"').strip("'")
+    user_id_obj = uuid.UUID(user_id)
     # Load state from DB (persistent, not just in-memory)
-    session = db.query(OnboardingSession).filter(OnboardingSession.user_id == user_id).first()
+    session = db.query(OnboardingSession).filter(OnboardingSession.user_id == str(user_id_obj)).first()
     if session:
         state = session.state
     else:
-        state = {"user_id": user_id, "current_state": "intro", "messages": []}
+        state = {"user_id": str(user_id_obj), "current_state": "intro", "messages": []}
     # Advance the state machine
     new_state = run_onboarding_state(state, user_input)
     # Persist state to DB
     if session:
         session.state = new_state
     else:
-        session = OnboardingSession(user_id=user_id, state=new_state)
+        session = OnboardingSession(user_id=str(user_id_obj), state=new_state)
         db.add(session)
     db.commit()
     # Optionally, persist to user profile if profile_complete
     if new_state.get("profile_complete"):
-        db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id).first()
+        db_profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id_obj).first()
         if not db_profile:
-            db_profile = models.UserProfile(user_id=user_id)
+            db_profile = models.UserProfile(user_id=str(user_id_obj))
             db.add(db_profile)
         db_profile.hiking_experience = new_state.get("hiking_experience", "")
         db_profile.gear_style = new_state.get("gear_style", "")
