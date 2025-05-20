@@ -18,9 +18,8 @@
    ```
 
 ### Run the FastAPI server
-Ensure the `app` package is on the PYTHON path by setting the app directory to `backend` and using the new modular planner app:
 ```bash
-uv run uvicorn app.planner.main:app --reload --port 8000 --app-dir backend
+uv run uvicorn app.main:app --reload --port 8000 --app-dir backend
 ```
 
 ### API Endpoints
