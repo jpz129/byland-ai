@@ -1,7 +1,7 @@
 from langgraph.graph.state import StateGraph
 from typing_extensions import TypedDict
 from typing import Any, Dict, List
-from app.memory import get_memory
+from app.planner.memory import get_memory
 
 # Define full state schema as TypedDict
 class TripState(TypedDict):

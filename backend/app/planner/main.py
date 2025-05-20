@@ -2,12 +2,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import asyncio
 from dotenv import load_dotenv  # type: ignore
-
 import os
 load_dotenv()
 
-from app.tools.mcp_tools import register_mcp_tools, mcp
-from app.pipelines.trip_planner_graph import run_trip_planner
+from app.planner.tools.mcp_tools import register_mcp_tools, mcp
+from app.planner.pipelines.trip_planner_graph import run_trip_planner
 
 # Initialize FastAPI app
 app = FastAPI(title="Trail Angel Planner")
